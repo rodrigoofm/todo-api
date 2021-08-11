@@ -8,7 +8,7 @@ import { Todo } from './Model/todo';
 export class TodoService {
   constructor(@InjectModel('Todo') private readonly todoModel: Model<Todo>) {}
 
-  async create(userId: string, todo: Todo) {
+  async create(userId: string, todo: Todo): Promise<Todo> {
     const createdTodo = new this.todoModel({
       ...todo,
       taskId: uuid(),
@@ -21,5 +21,15 @@ export class TodoService {
     });
 
     return await createdTodo.save();
+  }
+
+  async findUserTodos(userId: string): Promise<Todo[]> {
+    return await this.todoModel.find({ userId: userId, enable: true }).exec();
+  }
+
+  async findTodos(userId: string, taskId: string): Promise<Todo[]> {
+    return await this.todoModel
+      .find({ userId: userId, taskId: taskId, enable: true })
+      .exec();
   }
 }
