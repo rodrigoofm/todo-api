@@ -18,6 +18,7 @@ export class TodoService {
         status: 'PENDING',
         when: Date(),
       },
+      status: 'PENDING',
     });
 
     return await createdTodo.save();
@@ -30,6 +31,52 @@ export class TodoService {
   async findTodos(userId: string, taskId: string): Promise<Todo[]> {
     return await this.todoModel
       .find({ userId: userId, taskId: taskId, enable: true })
+      .exec();
+  }
+
+  async update(userId: string, taskId: string, todo: Todo): Promise<Todo> {
+    return await this.todoModel
+      .findOneAndUpdate(
+        {
+          taskId: taskId,
+          userId: userId,
+          enable: true,
+        },
+        todo,
+        { new: true },
+      )
+      .exec();
+  }
+
+  async delete(userId: string, taskId: string): Promise<Todo> {
+    return await this.todoModel
+      .findOneAndUpdate(
+        {
+          taskId: taskId,
+          userId: userId,
+        },
+        { enable: false },
+        { new: true },
+      )
+      .exec();
+  }
+
+  async updateStatus(
+    taskId: string,
+    userId: string,
+    status: Todo,
+  ): Promise<Todo> {
+    const statusTodo = this.todoModel.findOne();
+
+    return await this.todoModel
+      .findByIdAndUpdate(
+        {
+          taskId: taskId,
+          userId: userId,
+          status: status,
+        },
+        { new: true },
+      )
       .exec();
   }
 }

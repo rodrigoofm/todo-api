@@ -9,6 +9,7 @@ export const TodoSchema = new mongoose.Schema(
     enable: Boolean,
     when: { type: Date, requered: true },
     status_history: Array,
+    status: String,
   },
   { timestamps: true },
 );

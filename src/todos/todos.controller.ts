@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { Todo } from './Model/todo';
 import { TodoService } from './todo.service';
 
@@ -22,5 +30,30 @@ export class TodosController {
     @Param('taskId') taskId: string,
   ) {
     return this.todosService.findTodos(userId, taskId);
+  }
+
+  @Put('/users/:userId/:taskId/todos')
+  async update(
+    @Param('userId') userId: string,
+    @Param('taskId') taskId: string,
+    @Body() todo: Todo,
+  ) {
+    return await this.todosService.update(userId, taskId, todo);
+  }
+  @Delete('/users/:userId/:taskId/todos')
+  async delete(
+    @Param('userId') userId: string,
+    @Param('taskId') taskId: string,
+  ) {
+    return await this.todosService.delete(userId, taskId);
+  }
+
+  @Put('/users/:userId/:taskId/todos')
+  async updateStatus(
+    @Param('userId') userId: string,
+    @Param('taskId') taskId: string,
+    @Body() status_history: Todo,
+  ) {
+    return await this.todosService.updateStatus(userId, taskId, status_history);
   }
 }
