@@ -2,13 +2,11 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { v4 as uuid } from 'uuid';
 import { TodoDTO } from './dto/todo.dto';
-import { UpdateStatusDTO } from './dto/updateStatus.dto';
 import { Todo } from './model/todo';
 
 @Injectable()
