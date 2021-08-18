@@ -12,6 +12,7 @@ export class Todo extends Document {
   enable: boolean;
   when: Date;
   status_history: Array<IStatusHistory>;
+  status: string;
   createdAt: Date;
   updatedAt: Date;
 }

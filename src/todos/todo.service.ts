@@ -1,23 +1,46 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { v4 as uuid } from 'uuid';
-import { Todo } from './Model/todo';
+import { TodoDTO } from './dto/todo.dto';
+import { UpdateStatusDTO } from './dto/updateStatus.dto';
+import { Todo } from './model/todo';
 
 @Injectable()
 export class TodoService {
   constructor(@InjectModel('Todo') private readonly todoModel: Model<Todo>) {}
 
-  async create(userId: string, todo: Todo): Promise<Todo> {
+  async isValidTodo(userId: string, taskId: string): Promise<Todo> {
+    const isValidId = await this.todoModel.findOne({
+      taskId: taskId,
+      userId: userId,
+      enable: true,
+    });
+
+    if (!isValidId) {
+      throw new NotFoundException();
+    }
+
+    return isValidId;
+  }
+
+  async create(userId: string, TodoDTO: TodoDTO): Promise<Todo> {
     const createdTodo = new this.todoModel({
-      ...todo,
+      ...TodoDTO,
       taskId: uuid(),
       enable: true,
       userId,
-      status_history: {
-        status: 'PENDING',
-        when: Date(),
-      },
+      status_history: [
+        {
+          status: 'PENDING',
+          when: Date(),
+        },
+      ],
       status: 'PENDING',
     });
 
@@ -28,13 +51,17 @@ export class TodoService {
     return await this.todoModel.find({ userId: userId, enable: true }).exec();
   }
 
-  async findTodos(userId: string, taskId: string): Promise<Todo[]> {
-    return await this.todoModel
-      .find({ userId: userId, taskId: taskId, enable: true })
-      .exec();
+  async findTodos(userId: string, taskId: string): Promise<Todo> {
+    return await this.isValidTodo(userId, taskId);
   }
 
-  async update(userId: string, taskId: string, todo: Todo): Promise<Todo> {
+  async update(
+    userId: string,
+    taskId: string,
+    todoDTO: TodoDTO,
+  ): Promise<Todo> {
+    await this.isValidTodo(userId, taskId);
+
     return await this.todoModel
       .findOneAndUpdate(
         {
@@ -42,13 +69,15 @@ export class TodoService {
           userId: userId,
           enable: true,
         },
-        todo,
+        todoDTO,
         { new: true },
       )
       .exec();
   }
 
   async delete(userId: string, taskId: string): Promise<Todo> {
+    await this.isValidTodo(userId, taskId);
+
     return await this.todoModel
       .findOneAndUpdate(
         {
@@ -64,16 +93,35 @@ export class TodoService {
   async updateStatus(
     taskId: string,
     userId: string,
-    status: Todo,
+    newStatus: string,
   ): Promise<Todo> {
-    const statusTodo = this.todoModel.findOne();
+    const todo = await this.isValidTodo(userId, taskId);
+    const statusTodo = todo.status;
+
+    if (statusTodo == 'COMPLETED') {
+      throw new BadRequestException('Completed status cannot be changed');
+    }
+
+    if (statusTodo == 'CANCELED' && newStatus == 'COMPLETED') {
+      throw new BadRequestException(
+        'Cannot change canceled status to complete',
+      );
+    }
+
+    if (newStatus == 'PENDING') {
+      todo.status = 'PENDING';
+      todo.status_history.push({
+        status: 'PENDING',
+        when: new Date(),
+      });
+    }
 
     return await this.todoModel
       .findByIdAndUpdate(
         {
           taskId: taskId,
           userId: userId,
-          status: status,
+          status: newStatus,
         },
         { new: true },
       )

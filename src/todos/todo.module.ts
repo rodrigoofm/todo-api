@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common';
 import { TodosController } from './todos.controller';
 import { TodoSchema } from './schemas/todo.schema';
 import { TodoService } from './todo.service';
-import { Todo } from './Model/todo';
+import { Todo } from './model/todo';
 
 @Module({
   imports: [

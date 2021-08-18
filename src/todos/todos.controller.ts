@@ -7,7 +7,7 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { Todo } from './Model/todo';
+import { Todo } from './model/todo';
 import { TodoService } from './todo.service';
 
 @Controller()
@@ -24,7 +24,7 @@ export class TodosController {
     return this.todosService.findUserTodos(userId);
   }
 
-  @Get('/users/:userId/:taskId/todos')
+  @Get('/users/:userId/todos/:taskId')
   async findTodo(
     @Param('userId') userId: string,
     @Param('taskId') taskId: string,
@@ -32,7 +32,7 @@ export class TodosController {
     return this.todosService.findTodos(userId, taskId);
   }
 
-  @Put('/users/:userId/:taskId/todos')
+  @Put('/users/:userId/todos/:taskId')
   async update(
     @Param('userId') userId: string,
     @Param('taskId') taskId: string,
@@ -40,7 +40,7 @@ export class TodosController {
   ) {
     return await this.todosService.update(userId, taskId, todo);
   }
-  @Delete('/users/:userId/:taskId/todos')
+  @Delete('/users/:userId/todos/:taskId')
   async delete(
     @Param('userId') userId: string,
     @Param('taskId') taskId: string,
@@ -48,12 +48,16 @@ export class TodosController {
     return await this.todosService.delete(userId, taskId);
   }
 
-  @Put('/users/:userId/:taskId/todos')
+  @Put('users/:userId/todos/:taskId/status')
   async updateStatus(
     @Param('userId') userId: string,
     @Param('taskId') taskId: string,
-    @Body() status_history: Todo,
+    @Body() newStatus: { newStatus: string },
   ) {
-    return await this.todosService.updateStatus(userId, taskId, status_history);
+    return await this.todosService.updateStatus(
+      userId,
+      taskId,
+      newStatus.newStatus,
+    );
   }
 }
